@@ -2,3 +2,5 @@
 .venv/
 mission1/tests/__pycache__/
 mission2/tests/__pycache__/
+mission1/__pycache__/
+mission2/__pycache__/
