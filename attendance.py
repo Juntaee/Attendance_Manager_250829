@@ -1,7 +1,7 @@
 id1 = {}
 id_cnt = 0
 
-# dat[사용자ID][요일]
+# dat[사용자ID][요일] dididi
 dat = [[0] * 100 for _ in range(100)]
 points = [0] * 100
 grade = [0] * 100
