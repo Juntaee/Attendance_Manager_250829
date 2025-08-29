@@ -1,95 +1,123 @@
-id1 = {}
-id_cnt = 0
+# Global value
+MAX_FILE_LINE = 500
+MAX_USER_NUMBER = 100
 
-# dat[사용자ID][요일] dididi
-dat = [[0] * 100 for _ in range(100)]
-points = [0] * 100
-grade = [0] * 100
-names = [''] * 100
-wed = [0] * 100
-weeken = [0] * 100
+points = [0] * MAX_USER_NUMBER
+grade = [0] * MAX_USER_NUMBER
+user_name_list = [''] * MAX_USER_NUMBER
+training_day_cnt = [0] * MAX_USER_NUMBER
+weekend_cnt = [0] * MAX_USER_NUMBER
+total_uniform_number = 0
+user_number_dict = {}
 
-def input2(w, wk):
-    global id_cnt
+attendance_file = "attendance_weekday_500.txt"
+UTF_8 = 'utf-8'
 
-    if w not in id1:
-        id_cnt += 1
-        id1[w] = id_cnt
-        names[id_cnt] = w
+# Days info
+MONDAY = "monday"
+TUESDAY = "tuesday"
+WEDNESDAY = "wednesday"
+THURSDAY = "thursday"
+FRIDAY = "friday"
+SATURDAY = "saturday"
+SUNDAY = "sunday"
 
-    id2 = id1[w]
+days_dict = {MONDAY: 0, TUESDAY: 1, WEDNESDAY: 2, THURSDAY: 3, FRIDAY: 4, SATURDAY: 5, SUNDAY: 6}
+all_day = [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
+weekend_day = [SATURDAY, SUNDAY]
+training_day = [WEDNESDAY]
 
-    add_point = 0
-    index = 0
+# Grade classification
+GOLD = 1
+SILVER = 2
+NORMAL = 0
 
-    if wk == "monday":
-        index = 0
-        add_point += 1
-    elif wk == "tuesday":
-        index = 1
-        add_point += 1
-    elif wk == "wednesday":
-        index = 2
-        add_point += 3
-        wed[id2] += 1
-    elif wk == "thursday":
-        index = 3
-        add_point += 1
-    elif wk == "friday":
-        index = 4
-        add_point += 1
-    elif wk == "saturday":
-        index = 5
-        add_point += 2
-        weeken[id2] += 1
-    elif wk == "sunday":
-        index = 6
-        add_point += 2
-        weeken[id2] += 1
 
-    dat[id2][index] += 1
-    points[id2] += add_point
+def calc_basic_points(user_name, day_of_week):
+    register_uniform_number(user_name)
+    user_number = user_number_dict[user_name]
 
-def input_file():
+    if day_of_week not in all_day:
+        raise ValueError
+
+    if day_of_week in training_day:
+        points[user_number] += 3
+        training_day_cnt[user_number] += 1
+    elif day_of_week in weekend_day:
+        points[user_number] += 2
+        weekend_cnt[user_number] += 1
+    else:
+        points[user_number] += 1
+
+
+def register_uniform_number(user_name):
+    global total_uniform_number
+    if user_name not in user_number_dict:
+        total_uniform_number += 1
+        user_number_dict[user_name] = total_uniform_number
+        user_name_list[total_uniform_number] = user_name
+
+
+def print_removed_player():
+    print("\nRemoved player")
+    print("==============")
+    for user_num in range(1, total_uniform_number + 1):
+        if grade[user_num] not in (GOLD, SILVER) and training_day_cnt[user_num] == 0 and \
+                weekend_cnt[user_num] == 0:
+            print(user_name_list[user_num])
+
+
+def print_gold_silver_player():
+    for user_num in range(1, total_uniform_number + 1):
+        print(f"NAME : {user_name_list[user_num]}, POINT : {points[user_num]}, GRADE : ", end="")
+        if grade[user_num] == GOLD:
+            print("GOLD")
+        elif grade[user_num] == SILVER:
+            print("SILVER")
+        else:
+            print("NORMAL")
+
+
+def classify_grade():
+    for user_num in range(1, total_uniform_number + 1):
+        if points[user_num] >= 50:
+            grade[user_num] = GOLD
+        elif points[user_num] >= 30:
+            grade[user_num] = SILVER
+        else:
+            grade[user_num] = NORMAL
+
+
+def calc_bonus_points():
+    for user_num in range(1, total_uniform_number + 1):
+        if training_day_cnt[user_num] > 9:
+            points[user_num] += 10
+        if weekend_cnt[user_num] > 9:
+            points[user_num] += 10
+
+
+def parse_file_info():
     try:
-        with open("attendance_weekday_500.txt", encoding='utf-8') as f:
-            for _ in range(500):
+        with open(attendance_file, encoding=UTF_8) as f:
+            for _ in range(MAX_FILE_LINE):
                 line = f.readline()
                 if not line:
                     break
                 parts = line.strip().split()
-                if len(parts) == 2:
-                    input2(parts[0], parts[1])
-
-        for i in range(1, id_cnt + 1):
-            if dat[i][2] > 9:
-                points[i] += 10
-            if dat[i][5] + dat[i][6] > 9:
-                points[i] += 10
-
-            if points[i] >= 50:
-                grade[i] = 1
-            elif points[i] >= 30:
-                grade[i] = 2
-            else:
-                grade[i] = 0
-
-            print(f"NAME : {names[i]}, POINT : {points[i]}, GRADE : ", end="")
-            if grade[i] == 1:
-                print("GOLD")
-            elif grade[i] == 2:
-                print("SILVER")
-            else:
-                print("NORMAL")
-
-        print("\nRemoved player")
-        print("==============")
-        for i in range(1, id_cnt + 1):
-            if grade[i] not in (1, 2) and wed[i] == 0 and weeken[i] == 0:
-                print(names[i])
-
+                if len(parts) != 2:
+                    raise ValueError
+                calc_basic_points(parts[0], parts[1])
     except FileNotFoundError:
         print("파일을 찾을 수 없습니다.")
 
+
+def manage_attendance():
+    parse_file_info()
+    calc_bonus_points()
+    classify_grade()
+    print_gold_silver_player()
+    print_removed_player()
+
+
 if __name__ == "__main__":
-    input_file()
+    manage_attendance()
