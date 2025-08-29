@@ -1,5 +1,4 @@
 from unittest.mock import mock_open
-
 import pytest
 from pytest_mock import MockerFixture
 
