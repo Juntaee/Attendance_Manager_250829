@@ -7,3 +7,8 @@
 ### 정상 출력 결과 캡쳐본
 (마지막 커밋 기준)
 <img width="1463" height="750" alt="image" src="https://github.com/user-attachments/assets/c5237eb7-d9b2-441f-ad77-058cabea3860" />
+
+### UT 16개 100% 통과 캡쳐본
+(마지막 커밋 기준)
+
+<img width="807" height="85" alt="image" src="https://github.com/user-attachments/assets/282794d8-2419-4a33-91ac-1c7c9d135cfb" />
